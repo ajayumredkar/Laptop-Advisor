@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechMatch — Smart Device Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --ink2: #3a3a3a;
+    --ink3: #7a7a7a;
+    --paper: #f5f2ed;
+    --paper2: #edeae4;
+    --paper3: #e3dfd8;
+    --accent: #e84a27;
+    --accent2: #f07b5a;
+    --accent-dim: rgba(232,74,39,0.12);
+    --gold: #c8973a;
+    --white: #fff;
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 48px;
+    border-bottom: 1px solid var(--paper3);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .header-tag {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 48px 60px;
+    max-width: 900px;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1.5px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -2px;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink2);
+    max-width: 520px;
+    font-weight: 300;
+  }
+
+  /* ── LAYOUT ── */
+  .main-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: 70vh;
+    border-top: 1px solid var(--paper3);
+  }
+
+  /* ── FORM PANEL ── */
+  .form-panel {
+    padding: 56px 48px;
+    border-right: 1px solid var(--paper3);
+    background: var(--paper);
+  }
+
+  .panel-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--paper3);
+  }
+
+  .form-group {
+    margin-bottom: 28px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink2);
+    margin-bottom: 8px;
+  }
+
+  .required-star { color: var(--accent); }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--white);
+    border: 1.5px solid var(--paper3);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a7a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .pill input[type="radio"],
+  .pill input[type="checkbox"] {
+    display: none;
+  }
+
+  .pill-label {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1.5px solid var(--paper3);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink2);
+    background: var(--white);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .pill input:checked + .pill-label {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+
+  .pill-label:hover {
+    border-color: var(--ink2);
+    color: var(--ink);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 18px 24px;
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .submit-btn:hover { background: #c9391e; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: var(--ink3); cursor: not-allowed; }
+
+  .btn-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  /* ── RESULT PANEL ── */
+  .result-panel {
+    padding: 56px 48px;
+    background: var(--paper);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Idle state */
+  .idle-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    opacity: 0.5;
+  }
+
+  .idle-icon {
+    width: 64px; height: 64px;
+    border: 2px dashed var(--paper3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+
+  .idle-text {
+    font-size: 14px;
+    color: var(--ink3);
+    line-height: 1.6;
+    max-width: 240px;
+  }
+
+  /* Loading state */
+  .loading-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .loading-state.active { display: flex; }
+  .idle-state.hidden { display: none; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--paper3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .loading-sub {
+    font-size: 13px;
+    color: var(--ink3);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Results output */
+  #result-output {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  #result-output.active { display: flex; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RECOMMENDATION CARDS (injected HTML styling) ── */
+  #result-output .recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  #result-output .recommendation {
+    background: var(--white);
+    border: 1.5px solid var(--paper3);
+    border-radius: var(--radius);
+    padding: 28px;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #result-output .recommendation:hover {
+    border-color: var(--accent2);
+    box-shadow: 0 4px 24px rgba(232,74,39,0.08);
+  }
+
+  #result-output .recommendation:first-child::before {
+    content: '★ Top Pick';
+    position: absolute;
+    top: -1px; right: 20px;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 0 0 8px 8px;
+  }
+
+  #result-output h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+    padding-right: 80px;
+  }
+
+  #result-output .fit {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink2);
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--paper3);
+  }
+
+  #result-output table.specs {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  #result-output table.specs tr {
+    border-bottom: 1px solid var(--paper3);
+  }
+
+  #result-output table.specs tr:last-child { border-bottom: none; }
+
+  #result-output table.specs td {
+    padding: 7px 4px;
+    vertical-align: top;
+  }
+
+  #result-output table.specs td:first-child {
+    font-weight: 600;
+    color: var(--ink3);
+    width: 110px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #result-output table.specs td:last-child {
+    color: var(--ink);
+  }
+
+  #result-output .price {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  #result-output ul.pros,
+  #result-output ul.cons {
+    list-style: none;
+    margin-bottom: 10px;
+  }
+
+  #result-output ul.pros li::before {
+    content: '✓ ';
+    color: #2d8a4e;
+    font-weight: 700;
+  }
+
+  #result-output ul.cons li::before {
+    content: '✗ ';
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  #result-output ul li {
+    font-size: 13px;
+    color: var(--ink2);
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  /* Error state */
+  .error-box {
+    background: #fff5f3;
+    border: 1.5px solid #fcd3ca;
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    font-size: 14px;
+    color: #b83b25;
+    display: none;
+  }
+
+  .error-box.active { display: block; }
+
+
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--paper3);
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink3);
+  }
+
+  /* Responsive */
+  @media (max-width: 820px) {
+    header, .config-banner, .hero, footer { padding-left: 24px; padding-right: 24px; }
+    .main-wrap { grid-template-columns: 1fr; }
+    .form-panel { border-right: none; border-bottom: 1px solid var(--paper3); padding: 40px 24px; }
+    .result-panel { padding: 40px 24px; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero { padding: 48px 24px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    TechMatch
+  </div>
+  <span class="header-tag">AI Device Advisor</span>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Powered by AI</div>
+  <h1>Find your<br><em>perfect</em> machine.</h1>
+  <p class="hero-sub">Answer a few questions about how you work and what you need — our AI advisor recommends the best currently available laptops or desktops, matched precisely to you.</p>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrap">
+
+  <!-- FORM PANEL -->
+  <div class="form-panel">
+    <div class="panel-label">Your requirements</div>
+
+    <form id="advisor-form" autocomplete="off">
+
+      <div class="form-group">
+        <label>What do you do? <span class="required-star">*</span></label>
+        <input type="text" name="use_case" placeholder="e.g. Software developer, Video editor, Student, Architect…" required />
+      </div>
+
+      <div class="form-group">
+        <label>I am a… <span class="required-star">*</span></label>
+        <div class="pill-group">
+          <label class="pill"><input type="radio" name="user_type" value="Student" required><span class="pill-label">Student</span></label>
+          <label class="pill"><input type="radio" name="user_type" value="Professional"><span class="pill-label">Professional</span></label>
+          <label class="pill"><input type="radio" name="user_type" value="Creative / Designer"><span class="pill-label">Creative</span></label>
+          <label class="pill"><input type="radio" name="user_type" value="Gamer"><span class="pill-label">Gamer</span></label>
+          <label class="pill"><input type="radio" name="user_type" value="Developer / Engineer"><span class="pill-label">Developer</span></label>
+          <label class="pill"><input type="radio" name="user_type" value="Business user"><span class="pill-label">Business</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Primary tasks <span class="required-star">*</span></label>
+        <input type="text" name="primary_tasks" placeholder="e.g. Coding, video editing, gaming, spreadsheets, 3D rendering…" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Budget <span class="required-star">*</span></label>
+          <input type="text" name="budget" placeholder="e.g. ₹80,000 or $1,200" required />
+        </div>
+        <div class="form-group">
+          <label>Preferred OS</label>
+          <select name="preferred_os">
+            <option value="No preference">No preference</option>
+            <option value="Windows">Windows</option>
+            <option value="macOS">macOS</option>
+            <option value="Linux">Linux</option>
+            <option value="ChromeOS">ChromeOS</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Portability needs</label>
+        <div class="pill-group">
+          <label class="pill"><input type="radio" name="portability" value="High — I travel a lot"><span class="pill-label">High — travel often</span></label>
+          <label class="pill"><input type="radio" name="portability" value="Medium — occasional travel"><span class="pill-label">Medium — sometimes</span></label>
+          <label class="pill"><input type="radio" name="portability" value="Low — mostly at desk"><span class="pill-label">Low — desk-bound</span></label>
+          <label class="pill"><input type="radio" name="portability" value="Desktop is fine"><span class="pill-label">Desktop is fine</span></label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Display preference</label>
+          <select name="display_preference">
+            <option value="No preference">No preference</option>
+            <option value="13-14 inch compact">13–14" compact</option>
+            <option value="15-16 inch standard">15–16" standard</option>
+            <option value="17 inch large">17" large</option>
+            <option value="High refresh rate (144Hz+)">High refresh rate</option>
+            <option value="OLED / high-quality panel">OLED / high quality</option>
+            <option value="4K resolution">4K resolution</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Battery life priority</label>
+          <select name="battery_life">
+            <option value="Critical — all-day unplugged">Critical</option>
+            <option value="Important — 6–8 hours needed">Important</option>
+            <option value="Not a priority — near power most of the time">Not a priority</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Gaming requirement</label>
+        <div class="pill-group">
+          <label class="pill"><input type="radio" name="gaming_required" value="No gaming needed"><span class="pill-label">No gaming</span></label>
+          <label class="pill"><input type="radio" name="gaming_required" value="Light / casual gaming"><span class="pill-label">Casual</span></label>
+          <label class="pill"><input type="radio" name="gaming_required" value="Mid-range gaming (1080p)"><span class="pill-label">Mid-range</span></label>
+          <label class="pill"><input type="radio" name="gaming_required" value="High-end gaming (1440p / 4K)"><span class="pill-label">High-end</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Additional requirements</label>
+        <textarea name="additional_requirements" placeholder="e.g. Thunderbolt 4, good webcam, light weight under 1.5 kg, military-grade durability, stylus support…"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        <span>Find my perfect device</span>
+        <span class="btn-icon">→</span>
+      </button>
+
+    </form>
+  </div>
+
+  <!-- RESULT PANEL -->
+  <div class="result-panel">
+    <div class="panel-label">AI recommendations</div>
+
+    <!-- Idle -->
+    <div class="idle-state" id="idle-state">
+      <div class="idle-icon">💻</div>
+      <p class="idle-text">Fill in the form and hit <strong>Find my perfect device</strong> — your personalised recommendations will appear here.</p>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-text">Analysing your needs…</div>
+      <div class="loading-sub">Searching latest models & pricing</div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box"></div>
+
+    <!-- Results -->
+    <div id="result-output"></div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <span>TechMatch — AI Device Advisor &nbsp;·&nbsp; Powered by n8n + Claude</span>
+  <span>Recommendations based on currently available 2024–2025 models</span>
+</footer>
+
+<script>
+  const form = document.getElementById('advisor-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const idleState = document.getElementById('idle-state');
+  const loadingState = document.getElementById('loading-state');
+  const resultOutput = document.getElementById('result-output');
+  const errorBox = document.getElementById('error-box');
+  const WEBHOOK_URL = 'https://kacwing-1.app.n8n.cloud/webhook/laptop-advisor';
+
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.innerHTML = on
+      ? '<span>Analysing…</span><span class="btn-icon" style="animation:spin 0.8s linear infinite">↻</span>'
+      : '<span>Find my perfect device</span><span class="btn-icon">→</span>';
+    idleState.classList.toggle('hidden', on);
+    loadingState.classList.toggle('active', on);
+    if (on) {
+      resultOutput.classList.remove('active');
+      resultOutput.innerHTML = '';
+      errorBox.classList.remove('active');
+    }
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('active');
+    loadingState.classList.remove('active');
+    idleState.classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const webhookUrl = WEBHOOK_URL;
+
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    // Collect radio values explicitly
+    ['user_type', 'portability', 'gaming_required'].forEach(name => {
+      const checked = form.querySelector(`input[name="${name}"]:checked`);
+      data[name] = checked ? checked.value : 'Not specified';
+    });
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error(`Server returned ${res.status} — check your n8n workflow is active.`);
+
+      const json = await res.json();
+
+      loadingState.classList.remove('active');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Find my perfect device</span><span class="btn-icon">→</span>';
+
+      // The webhook returns { success: true, recommendations: "<html string>" }
+      let html = '';
+      if (json.recommendations) {
+        html = json.recommendations;
+      } else if (json.content) {
+        // fallback: raw Anthropic response
+        html = json.content;
+      } else {
+        html = JSON.stringify(json, null, 2);
+      }
+
+      resultOutput.innerHTML = html;
+      resultOutput.classList.add('active');
+      resultOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      showError('⚠️ ' + (err.message || 'Something went wrong. Please check your webhook URL and try again.'));
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Find my perfect device</span><span class="btn-icon">→</span>';
+    }
+  });
+</script>
+</body>
+</html>

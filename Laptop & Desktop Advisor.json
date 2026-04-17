@@ -1,0 +1,294 @@
+{
+  "name": "Laptop & Desktop Advisor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "laptop-advisor",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "da9e2769-2848-4174-a2c2-472456cd09fe",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        -48
+      ],
+      "webhookId": "417efaae-6c0f-4978-8f13-65ed8a60781b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-use-case",
+              "name": "use_case",
+              "value": "={{ $json.body.use_case }}",
+              "type": "string"
+            },
+            {
+              "id": "field-budget",
+              "name": "budget",
+              "value": "={{ $json.body.budget }}",
+              "type": "string"
+            },
+            {
+              "id": "field-user-type",
+              "name": "user_type",
+              "value": "={{ $json.body.user_type }}",
+              "type": "string"
+            },
+            {
+              "id": "field-preferred-os",
+              "name": "preferred_os",
+              "value": "={{ $json.body.preferred_os }}",
+              "type": "string"
+            },
+            {
+              "id": "field-portability",
+              "name": "portability",
+              "value": "={{ $json.body.portability }}",
+              "type": "string"
+            },
+            {
+              "id": "field-primary-tasks",
+              "name": "primary_tasks",
+              "value": "={{ $json.body.primary_tasks }}",
+              "type": "string"
+            },
+            {
+              "id": "field-display-pref",
+              "name": "display_preference",
+              "value": "={{ $json.body.display_preference }}",
+              "type": "string"
+            },
+            {
+              "id": "field-battery-life",
+              "name": "battery_life",
+              "value": "={{ $json.body.battery_life }}",
+              "type": "string"
+            },
+            {
+              "id": "field-gaming",
+              "name": "gaming_required",
+              "value": "={{ $json.body.gaming_required }}",
+              "type": "string"
+            },
+            {
+              "id": "field-extras",
+              "name": "additional_requirements",
+              "value": "={{ $json.body.additional_requirements }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0bd71f9a-3491-4578-8505-afad86bc207d",
+      "name": "Format Input Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, recommendations: $json.output || \"\" }.toJsonString() }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d6c9ef5f-b75f-4b8f-84bf-a96455769051",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Profile:\n\nUse Case: {{ $json.use_case }}\nUser Type: {{ $json.user_type }}\nPrimary Tasks: {{ $json.primary_tasks }}\nBudget: {{ $json.budget }}\nPreferred OS: {{ $json.preferred_os }}\nPortability: {{ $json.portability }}\nDisplay Preference: {{ $json.display_preference }}\nBattery Life: {{ $json.battery_life }}\nGaming Requirement: {{ $json.gaming_required }}\nAdditional Requirements: {{ $json.additional_requirements }}\n\nGenerate recommendations based on the above.",
+        "options": {
+          "systemMessage": "You are an expert AI device advisor specializing in recommending laptops and desktops based on user requirements.\n\nYour task is to:\n1. Analyze user inputs carefully\n2. Translate requirements into technical specifications\n3. Recommend the BEST currently available devices (2024–2025 models)\n4. Stay within or very close to the user's budget\n5. Provide 2 to 4 recommendations maximum\n\nSTRICT OUTPUT RULES:\n- Output MUST be clean HTML only\n- DO NOT return JSON\n- DO NOT return markdown\n- DO NOT include explanations outside HTML\n- Use ONLY the HTML structure defined below\n\nDEVICE SELECTION RULES:\n- Match CPU, RAM, GPU based on use case\n- Respect budget strictly (±10% max)\n- Consider portability, battery, and OS preference\n- Gaming needs override GPU requirements\n- Creative work requires high RAM + GPU + display quality\n- Business users prioritize battery + build quality\n- Developers need RAM + CPU (multi-core)\n\nHTML FORMAT (MANDATORY):\n\n<div class=\"recommendations\">\n\n  <div class=\"recommendation\">\n    <h3>Device Name</h3>\n\n    <div class=\"fit\">\n      Why this device is suitable for the user (2–3 lines)\n    </div>\n\n    <table class=\"specs\">\n      <tr><td>CPU</td><td>...</td></tr>\n      <tr><td>RAM</td><td>...</td></tr>\n      <tr><td>Storage</td><td>...</td></tr>\n      <tr><td>GPU</td><td>...</td></tr>\n      <tr><td>Display</td><td>...</td></tr>\n      <tr><td>Weight</td><td>...</td></tr>\n      <tr><td>Battery</td><td>...</td></tr>\n    </table>\n\n    <div class=\"price\">₹ or $ price range</div>\n\n    <ul class=\"pros\">\n      <li>...</li>\n      <li>...</li>\n    </ul>\n\n    <ul class=\"cons\">\n      <li>...</li>\n      <li>...</li>\n    </ul>\n  </div>\n\n</div>\n\nRECOMMENDATION STRATEGY:\n- First recommendation = BEST MATCH (Top Pick)\n- Others = alternatives (budget / performance / portability trade-offs)\n\nIMPORTANT:\n- Use real-world device names (Dell, HP, Apple, Lenovo, ASUS, Acer, etc.)\n- Keep descriptions concise and professional\n- Do NOT hallucinate unrealistic specs",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "97070693-e60a-4824-942d-fbeeed000471",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        144
+      ],
+      "id": "d76b28a0-11dd-42cc-be4b-7fda47437181",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5qglWv9mBD3eINQU",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook Trigger": [
+      {
+        "json": {
+          "headers": {
+            "host": "kacwing-1.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+            "content-length": "381",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-IN,en-US;q=0.9,en;q=0.8,mr-IN;q=0.7,mr;q=0.6,hi-IN;q=0.5,hi;q=0.4,en-GB;q=0.3",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "2405:201:1026:c80c:b160:3560:91f8:3a30",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "IN",
+            "cf-ray": "9ec395bbef3f6d9f-HYD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "origin": "null",
+            "priority": "u=1, i",
+            "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "2405:201:1026:c80c:b160:3560:91f8:3a30, 172.70.192.182",
+            "x-forwarded-host": "kacwing-1.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-119-55454b458-stb5f",
+            "x-is-trusted": "yes",
+            "x-real-ip": "2405:201:1026:c80c:b160:3560:91f8:3a30"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "use_case": "IT Manager",
+            "user_type": "Professional",
+            "primary_tasks": "General purpose software, Word, Excel and Power Point",
+            "budget": "35000",
+            "preferred_os": "No preference",
+            "portability": "Medium — occasional travel",
+            "display_preference": "15-16 inch standard",
+            "battery_life": "Important — 6–8 hours needed",
+            "gaming_required": "Light / casual gaming",
+            "additional_requirements": ""
+          },
+          "webhookUrl": "https://kacwing-1.app.n8n.cloud/webhook-test/laptop-advisor",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Input Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Input Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8a7fba57-380a-4bef-831a-a34656a45a14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d75ff1c1ab069d06bac8cb797fe81d7b1779417045c8eab48e268c8b04f86011"
+  },
+  "id": "8Im8CuYFs27PiWYT",
+  "tags": []
+}
